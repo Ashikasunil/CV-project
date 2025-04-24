@@ -52,7 +52,7 @@ if uploaded_file:
     overlay[:, :, 1] = np.maximum(overlay[:, :, 1], binary_mask_resized_np)
 
     st.subheader("🔬 Overlay Visualization")
-    st.image(overlay, use_column_width=True, caption="🩻 Image + Predicted Mask")
+    st.image(overlay, use_column_width=False, caption="🩻 Image + Predicted Mask")
 
     confidence = pred_mask.mean().item()
     st.subheader("🧠 Prediction Confidence")
