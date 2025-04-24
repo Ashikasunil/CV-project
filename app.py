@@ -29,7 +29,7 @@ uploaded_file = st.file_uploader("📤 Upload Lung CT Image", type=["jpg", "jpeg
 
 if uploaded_file:
     image = Image.open(uploaded_file).convert("RGB")
-    resized_image = image.resize((200, 200))
+    resized_image = image.resize((100, 100))
 
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -42,13 +42,13 @@ if uploaded_file:
             pred_mask = torch.sigmoid(output)
             binary_mask = postprocess_mask(pred_mask)
 
-    binary_mask_resized = Image.fromarray(binary_mask).resize((200, 200))
+    binary_mask_resized = Image.fromarray(binary_mask).resize((100, 100))
     binary_mask_resized_np = np.array(binary_mask_resized)
 
     with col2:
         st.image(binary_mask_resized_np, caption="📌 Segmentation Mask", use_column_width=True)
 
-    overlay = np.array(image.resize((200, 200))).copy()
+    overlay = np.array(image.resize((100, 100))).copy()
     overlay[:, :, 1] = np.maximum(overlay[:, :, 1], binary_mask_resized_np)
 
     st.subheader("🔬 Overlay Visualization")
