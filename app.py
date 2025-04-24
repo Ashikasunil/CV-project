@@ -7,7 +7,7 @@ from model import QRC_UNet
 from utils import preprocess_image, postprocess_mask
 
 st.set_page_config(page_title="Lung CT Scan Segmentation", layout="wide")
-st.title("🧬 Lung Nodule Segmentation (QRC-U-Net)")
+st.title("🧬 Lung Module Segmentation ")
 
 @st.cache_resource
 def load_model():
