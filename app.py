@@ -74,13 +74,13 @@ if uploaded_file:
             pred_mask = torch.sigmoid(output)
             binary_mask = postprocess_mask(pred_mask)
 
-    binary_mask_resized = Image.fromarray(binary_mask).resize((256, 256))
+    binary_mask_resized = Image.fromarray(binary_mask).resize((200, 200))
     binary_mask_resized_np = np.array(binary_mask_resized)
 
     st.subheader("📌 Segmentation Mask")
     st.image(binary_mask_resized_np, caption="Detected Region", use_column_width=True)
 
-    overlay = np.array(image.resize((256, 256))).copy()
+    overlay = np.array(image.resize((200, 200))).copy()
     overlay[:, :, 1] = np.maximum(overlay[:, :, 1], binary_mask_resized_np)
 
     st.subheader("🩻 Overlayed Output")
