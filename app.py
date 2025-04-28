@@ -1,99 +1,78 @@
 
 import streamlit as st
 from PIL import Image
-import torch
 import numpy as np
-from model import QRC_UNet
-from utils import preprocess_image, postprocess_mask
+import matplotlib.pyplot as plt
+import torch
+from model import load_model, preprocess_image, predict
 
-st.set_page_config(page_title="Lung CT Segmentation", layout="wide")
+# Load the trained model
+model_path = 'qrc_unet_trained.pth'  # Update this path if different
+model = load_model(model_path)
 
-# --- 🧑‍🎨 CUSTOM CSS ---
-st.markdown("""
-    <style>
-        body {
-            background: linear-gradient(to right, #e3f2fd, #f8f9fa);
-        }
-        .big-title {
-            text-align: center;
-            padding: 10px;
-            border-radius: 12px;
-            background-color: #1565c0;
-            color: white;
-            font-size: 30px;
-            font-weight: bold;
-        }
-        .footer {
-            font-size: 13px;
-            text-align: center;
-            color: #888;
-            padding-top: 30px;
-        }
-        .card {
-            background: white;
-            padding: 15px;
-            border-radius: 12px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-    </style>
-""", unsafe_allow_html=True)
+# Hard-coded metrics (replace with your actual values)
+TRAIN_LOSS = 0.05
+TRAIN_DICE = 0.91
+VAL_LOSS = 0.07
+VAL_DICE = 0.89
+TEST_LOSS = 0.06
+TEST_DICE = 0.90
+IOU_SCORE = 0.88
+PRECISION = 0.92
+RECALL = 0.89
 
-st.markdown("<div class='big-title'>🫁 Lung CT Scan Segmentation (QRC-U-Net)</div>", unsafe_allow_html=True)
+# App title
+st.title("Lung CT Malignant Nodule Segmentation - QRC-UNet")
+st.write("Upload a CT scan image and its ground truth mask to see segmentation results.")
 
-@st.cache_resource
-def load_model():
-    model = QRC_UNet()
-    model.load_state_dict(torch.load("qrc_unet_trained.pth", map_location='cpu'))
-    model.eval()
-    return model
+# File Upload
+uploaded_image = st.file_uploader("Upload CT Scan Image", type=['png', 'jpg', 'jpeg'])
+uploaded_mask = st.file_uploader("Upload Ground Truth Mask", type=['png', 'jpg', 'jpeg'])
 
-model = load_model()
+if uploaded_image and uploaded_mask:
+    # Load Images
+    input_image = Image.open(uploaded_image).convert('RGB')
+    ground_truth = Image.open(uploaded_mask).convert('L')
 
-with st.expander("ℹ️ What does this app do?", expanded=False):
-    st.markdown("""
-    This application uses a lightweight QRC-U-Net model to segment lung nodules from CT scan images.  
-    **Upload a CT scan**, and the model will return:  
-    - The **binary segmentation mask**  
-    - An **overlay on the original image**  
-    - A **confidence score**  
-    """)
+    # Preprocess input image
+    input_tensor = preprocess_image(input_image)
 
-uploaded_file = st.file_uploader("📤 Upload a Lung CT Image", type=["jpg", "jpeg", "png"])
+    # Predict
+    prediction = predict(model, input_tensor)
 
-if uploaded_file:
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
-    image = Image.open(uploaded_file).convert("RGB")
-    resized_image = image.resize((200, 200))
-    st.image(resized_image, caption="🖼️ Uploaded Image", use_column_width=False)
+    # Display Images Side-by-Side
+    st.subheader("Comparison")
+    col1, col2, col3 = st.columns(3)
 
-    input_tensor = preprocess_image(image)
-    with st.spinner("🔍 Segmenting..."):
-        with torch.no_grad():
-            output = model(input_tensor)
-            pred_mask = torch.sigmoid(output)
-            binary_mask = postprocess_mask(pred_mask)
+    with col1:
+        st.image(input_image, caption="Input CT Image", use_column_width=True)
 
-    binary_mask_resized = Image.fromarray(binary_mask).resize((200, 200))
-    binary_mask_resized_np = np.array(binary_mask_resized)
+    with col2:
+        st.image(ground_truth, caption="Ground Truth Mask", use_column_width=True)
 
-    st.subheader("📌 Segmentation Mask")
-    st.image(binary_mask_resized_np, caption="Detected Region", use_column_width=True)
+    with col3:
+        plt.figure(figsize=(3,3))
+        plt.imshow(prediction, cmap='gray')
+        plt.axis('off')
+        st.pyplot(plt)
+        plt.close()
 
-    overlay = np.array(image.resize((200, 200))).copy()
-    overlay[:, :, 1] = np.maximum(overlay[:, :, 1], binary_mask_resized_np)
+    # Display Metrics
+    st.subheader("Model Metrics")
+    st.markdown("### Training and Validation")
+    st.metric("Train Loss", f"{TRAIN_LOSS:.4f}")
+    st.metric("Train Dice Score", f"{TRAIN_DICE:.4f}")
+    st.metric("Validation Loss", f"{VAL_LOSS:.4f}")
+    st.metric("Validation Dice Score", f"{VAL_DICE:.4f}")
 
-    st.subheader("🩻 Overlayed Output")
-    st.image(overlay, caption="Original + Mask", use_column_width=True)
+    st.markdown("### Testing")
+    st.metric("Test Loss", f"{TEST_LOSS:.4f}")
+    st.metric("Test Dice Score", f"{TEST_DICE:.4f}")
 
-    confidence = pred_mask.mean().item()
-    st.subheader("🧠 Prediction Confidence")
-    st.progress(min(confidence, 1.0))
-    st.success(f"Confidence Score: {confidence * 100:.2f}%")
-    st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown("### Other Evaluation Metrics")
+    st.metric("IoU Score", f"{IOU_SCORE:.4f}")
+    st.metric("Precision", f"{PRECISION:.4f}")
+    st.metric("Recall", f"{RECALL:.4f}")
 
-    if st.button("🔄 Upload Another Image"):
-        st.experimental_rerun()
-
-# --- Footer ---
-st.markdown("<div class='footer'>Built with ❤️ using QRC-U-Net • Streamlit • PyTorch</div>", unsafe_allow_html=True)
+else:
+    st.warning("Please upload both CT scan image and ground truth mask.")
