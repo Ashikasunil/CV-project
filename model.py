@@ -18,9 +18,9 @@ class QRC_UNet(nn.Module):
         # Define the forward pass
         return x
 
-def load_model(model_path):
+def load_model(qrc_unet_trained.pth):
     model = QRC_UNet()
-    model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+    model.load_state_dict(torch.load(qrc_unet_trained.pth, map_location=torch.device('cpu')))
     model.eval()
     return model
 
