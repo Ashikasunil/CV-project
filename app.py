@@ -8,7 +8,7 @@ from model import load_model, preprocess_image, predict
 
 # Load the trained model
 model_path = 'qrc_unet_trained (1).pth'  # Update this path if different
-model = load_model(qrc_unet_trained (1).pth)
+model = load_model(qrc_unet_trained (1).pth.pth)
 
 # Hard-coded metrics (replace with your actual values)
 TRAIN_LOSS = 0.05
