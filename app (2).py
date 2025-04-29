@@ -130,16 +130,15 @@ with st.spinner("🔍 Segmenting..."):
         resized_mask = Image.fromarray(mask * 255).resize(image.size)
         mask_resized_np = np.array(resized_mask) // 255
 
+        # ✅ Create overlay (no duplicate)
         overlay = np.array(image).copy()
         overlay[mask_resized_np.astype(bool)] = [255, 0, 0]
 
-
-# Create overlay
-overlay = np.array(image).copy()
-overlay[mask_resized_np.astype(bool)] = [255, 0, 0]
+# Display results in columns
 col1, col2, col3 = st.columns(3)
 col1.image(image, caption="🖼️ Original", use_column_width=True)
 col2.image(resized_mask, caption="📌 Mask", use_column_width=True)
 col3.image(overlay, caption="📊 Overlay", use_column_width=True)
+
 st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<div class='footer'>Built with ❤️ using QRC-U-Net • Streamlit • PyTorch</div>", unsafe_allow_html=True)
