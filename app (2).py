@@ -8,7 +8,7 @@ from torchvision import transforms
 from PIL import Image
 import numpy as np
 
-st.set_page_config(page_title="Lung Nodule Segmentation", layout="wide")
+st.set_page_config(page_title="Lung Module Segmentation", layout="wide")
 st.markdown("""
     <style>
         body {
@@ -39,7 +39,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<div class='big-title'>🫁 Lung Nodule Segmentation (QRC-U-Net)</div>", unsafe_allow_html=True)
+st.markdown("<div class='big-title'>🫁 Lung Module Segmentation (QRC-U-Net)</div>", unsafe_allow_html=True)
 
 class QuantumFourierConv(nn.Module):
     def __init__(self, channels):
@@ -109,7 +109,7 @@ def preprocess_image(image):
 @st.cache_resource
 def load_model():
     model = QRC_UNet()
-    model.load_state_dict(torch.load("qrc_unet_trained.pth", map_location="cpu"))
+    model.load_state_dict(torch.load("qrc_unet_trained (1).pth", map_location="cpu"))
     model.eval()
     return model
 
