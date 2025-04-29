@@ -142,7 +142,5 @@ col1, col2, col3 = st.columns(3)
 col1.image(image, caption="🖼️ Original", use_column_width=True)
 col2.image(resized_mask, caption="📌 Mask", use_column_width=True)
 col3.image(overlay, caption="📊 Overlay", use_column_width=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
+st.markdown("</div>", unsafe_allow_html=True)
 st.markdown("<div class='footer'>Built with ❤️ using QRC-U-Net • Streamlit • PyTorch</div>", unsafe_allow_html=True)
