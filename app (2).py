@@ -122,13 +122,21 @@ if uploaded_file:
     input_tensor = preprocess_image(image)
 
     with st.spinner("🔍 Segmenting..."):
-        with torch.no_grad():
-            output = model(input_tensor)
-            pred_mask = torch.sigmoid(output).squeeze().cpu().numpy()
-            mask = (pred_mask > 0.5).astype(np.uint8)
-            resized_mask = Image.fromarray(mask * 255).resize(image.size)
-            overlay = np.array(image).copy()
-            overlay[mask.astype(bool)] = [255, 0, 0]
+    with torch.no_grad():
+        output = model(input_tensor)
+        pred_mask = torch.sigmoid(output).squeeze().cpu().numpy()
+        mask = (pred_mask > 0.5).astype(np.uint8)
+
+        # ✅ Resize mask before applying overlay
+        resized_mask = Image.fromarray(mask * 255).resize(image.size)
+        mask_resized_np = np.array(resized_mask) // 255
+
+        overlay = np.array(image).copy()
+        overlay[mask_resized_np.astype(bool)] = [255, 0, 0]
+
+# Create overlay
+overlay = np.array(image).copy()
+overlay[mask_resized_np.astype(bool)] = [255, 0, 0]
 
     col1, col2, col3 = st.columns(3)
     col1.image(image, caption="🖼️ Original", use_column_width=True)
